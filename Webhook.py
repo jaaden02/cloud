@@ -64,7 +64,8 @@ def call_openai_api():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     processed_text = call_openai_api()
-    return jsonify({'processed_text': processed_text})
+    #return jsonify({'processed_text': processed_text})
+    return processed_text
 
 if __name__ == '__main__':
     app.run(debug=True)
