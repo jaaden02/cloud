@@ -11,7 +11,7 @@ app = Flask(__name__)
 # Function to call OpenAI API and process text
 def call_openai_api():
     # Replace 'your-api-key' with your actual API key, ideally from an environment variable
-    openai.api_key = os.getenv('OPENAI_API_KEY', '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')
+    openai.api_key = os.getenv('OPENAI_API_KEY')
     
     # The prompt you want the model to complete
     prompt_text = 'i am going to visit Berlin'
