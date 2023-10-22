@@ -33,7 +33,7 @@ def call_openai_api():
     except Exception as e:
         return jsonify({"error": f"An error occurred: {e}"}), 500
 
-@app.route('/webhook', methods=['POST'])
+@app.route('/Webhook', methods=['POST'])
 def webhook():
     processed_text = call_openai_api()
     return jsonify({'processed_text': processed_text})
