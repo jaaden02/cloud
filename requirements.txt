@@ -5,5 +5,3 @@ python-dotenv==0.19.1
 SQLAlchemy==1.4.25
 openai==0.27.0
 Werkzeug==2.0.1
-Celery==4.4.7  # Downgraded to a compatible version
-Redis==4.0.2

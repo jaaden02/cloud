@@ -1,22 +1,22 @@
-from celery import Celery
-import openai
-import os
 from flask import Flask, request, jsonify
+import threading
+import openai
+import time
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# Initialize Celery
-celery = Celery(app.name, broker='redis://localhost:6379/0')
-celery.conf.update(app.config)
+# Event object to signal when API call is done
+api_done_event = threading.Event()
 
-# Background task
-@celery.task(bind=True)
 # GPT-3.5 Turbo API call
 def call_openai_api():
+
+
     try:
-        openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
-        
+        #openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
+        openai.api_key = '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'
+
         if not openai.api_key:
             return jsonify({"error": "API key not found"}), 500
         
@@ -88,22 +88,36 @@ def call_openai_api():
             frequency_penalty=0.5,
             presence_penalty=0.6
         )
-        
+        print("Finished API call.")
+        api_done_event.set()
         assistant_message = response['choices'][0]['message']['content']
+        print("API Response:", assistant_message)  # Print the API response
         return assistant_message
-    
+
     except Exception as e:
         return jsonify({"error": f"An error occurred: {e}"}), 500
 
+def occupy_system():
+    print("System is being occupied.")
+    while not api_done_event.is_set():
+        print("Occupying...")
+        time.sleep(1)
+    print("System is free now.")
+
 @app.route('/Webhook', methods=['POST'])
 def webhook():
-    task = call_openai_api.apply_async()
-    return jsonify({'status': 'accepted', 'job_id': task.id}), 202
+    api_thread = threading.Thread(target=call_openai_api)
+    occupy_thread = threading.Thread(target=occupy_system)
 
-@app.route('/Webhook/status/<string:task_id>', methods=['GET'])
-def task_status(task_id):
-    task = call_openai_api.AsyncResult(task_id)
-    return jsonify({'status': task.status, 'result': task.result if task.status == 'SUCCESS' else None})
+    api_thread.start()
+    occupy_thread.start()
+
+    api_thread.join()
+    occupy_thread.join()
+
+    api_done_event.clear()
+
+    return jsonify({'status': 'accepted'}), 202
 
 if __name__ == '__main__':
     app.run(debug=False)
