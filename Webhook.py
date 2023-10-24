@@ -14,8 +14,7 @@ def call_openai_api():
 
 
     try:
-        #openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
-        openai.api_key = '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'
+        openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
 
         if not openai.api_key:
             return jsonify({"error": "API key not found"}), 500
