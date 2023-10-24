@@ -2,6 +2,11 @@ from flask import Flask, request, jsonify
 import threading
 import openai
 import time
+import os  # Missing import added
+import logging  # For better logging
+
+# Initialize logging
+logging.basicConfig(level=logging.INFO)
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -9,15 +14,12 @@ app = Flask(__name__)
 # Event object to signal when API call is done
 api_done_event = threading.Event()
 
-# GPT-3.5 Turbo API call
 def call_openai_api():
-
-
     try:
         openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
-
         if not openai.api_key:
-            return jsonify({"error": "API key not found"}), 500
+            logging.error("API key not found")  # Logging instead of returning
+            return
         
         model= "gpt-3.5-turbo-16k"
         token= 16000
@@ -96,12 +98,20 @@ def call_openai_api():
     except Exception as e:
         return jsonify({"error": f"An error occurred: {e}"}), 500
 
+        logging.info("Finished API call.")
+        api_done_event.set()
+        assistant_message = response['choices'][0]['message']['content']
+        logging.info(f"API Response: {assistant_message}")
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")  # Logging instead of returning
+
 def occupy_system():
-    print("System is being occupied.")
+    logging.info("System is being occupied.")
     while not api_done_event.is_set():
-        print("Occupying...")
+        logging.info("Occupying...")
         time.sleep(1)
-    print("System is free now.")
+    logging.info("System is free now.")
 
 @app.route('/Webhook', methods=['POST'])
 def webhook():
