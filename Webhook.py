@@ -1,3 +1,4 @@
+from celery import Celery
 import openai
 import os
 from flask import Flask, request, jsonify
@@ -5,12 +6,13 @@ from flask import Flask, request, jsonify
 # Initialize Flask app
 app = Flask(__name__)
 
+# Initialize Celery
+celery = Celery(app.name, broker='redis://localhost:6379/0')
+celery.conf.update(app.config)
 
-# Function to call OpenAI API and process text
-
-
+# Background task
+@celery.task(bind=True)
 # GPT-3.5 Turbo API call
-
 def call_openai_api():
     try:
         openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
@@ -95,8 +97,13 @@ def call_openai_api():
 
 @app.route('/Webhook', methods=['POST'])
 def webhook():
-    processed_text = call_openai_api()
-    return jsonify({'processed_text': processed_text})
+    task = call_openai_api.apply_async()
+    return jsonify({'status': 'accepted', 'job_id': task.id}), 202
+
+@app.route('/Webhook/status/<string:task_id>', methods=['GET'])
+def task_status(task_id):
+    task = call_openai_api.AsyncResult(task_id)
+    return jsonify({'status': task.status, 'result': task.result if task.status == 'SUCCESS' else None})
 
 if __name__ == '__main__':
     app.run(debug=False)
