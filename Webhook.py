@@ -27,16 +27,17 @@ def call_openai_api():
         if not openai.api_key:
             return jsonify({"error": "API key not found"}), 500
         
-        prompt_text = 'Please just formulate a long text that takes you more than 1 min to generate'
+        prompt_text = 'Please just formulate a very long and intricate maybe about a page. Give a thorough analysis of the Lord of the Rings books and movies, compaire them and rate them.'
         role = "You will help me test the limits of the Azure timeout"
         
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-16k",
             messages=[
                 {"role": "system", "content": role},
                 {"role": "user", "content": prompt_text},
                 {"role": "assistant", "content": ""}
             ],
+            max_tokens=7000,
             stream=True  # Turn on streaming
         )
         
