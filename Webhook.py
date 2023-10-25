@@ -1,10 +1,23 @@
 import openai
 import os
 from flask import Flask, request, jsonify
+import sys
 
 # Initialize Flask app
 app = Flask(__name__)
 
+# Function to handle streaming from OpenAI API
+def handle_stream(response):
+    collected_message = ""
+    for chunk in response:
+        delta = chunk.get('choices', [{}])[0].get('delta', {})
+        content = delta.get('content', None)
+
+        if content is not None:
+            print(content, end="")
+            sys.stdout.flush()
+            collected_message += content
+    return collected_message
 
 # Function to call OpenAI API and process text
 def call_openai_api():
@@ -14,8 +27,8 @@ def call_openai_api():
         if not openai.api_key:
             return jsonify({"error": "API key not found"}), 500
         
-        prompt_text = 'i am going to visit Berlin'
-        role = "You will be my personal travel guide to provide me with a tailor made travel plan"
+        prompt_text = 'Please just formulate a long text that takes you more than 1 min to generate'
+        role = "You will help me test the limits of the Azure timeout"
         
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -23,10 +36,15 @@ def call_openai_api():
                 {"role": "system", "content": role},
                 {"role": "user", "content": prompt_text},
                 {"role": "assistant", "content": ""}
-            ]
+            ],
+            stream=True  # Turn on streaming
         )
         
-        assistant_message = response['choices'][0]['message']['content']
+        assistant_message = handle_stream(response)
+        
+        print("\nComplete Message:")
+        print(assistant_message)
+        
         return assistant_message
     
     except Exception as e:
