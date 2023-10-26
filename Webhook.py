@@ -27,11 +27,38 @@ def call_openai_api():
         if not openai.api_key:
             return jsonify({"error": "API key not found"}), 500
         
-        prompt_text = 'Please just formulate a very long and intricate maybe about a page. Give a thorough analysis of the Lord of the Rings books and movies, compaire them and rate them.'
-        role = "You will help me test the limits of the Azure timeout"
+        prompt_text = (
+    "Title: 'The Dance of the Cosmos: Exploring the Interplay between Chaos Theory "
+    "and Quantum Mechanics in Predicting Celestial Mechanics'\n\n"
+    "Prompt:\n\n"
+    "The deterministic yet unpredictable nature of chaotic systems and the inherent "
+    "uncertainty in quantum mechanics appear to be at odds, yet they both play crucial "
+    "roles in understanding the behavior of celestial bodies. Your task is to delve into "
+    "the interplay between Chaos Theory and Quantum Mechanics in the realm of celestial mechanics.\n\n"
+    "1. Provide a comprehensive overview of Chaos Theory and Quantum Mechanics, elucidating "
+    "their fundamental principles, mathematical frameworks, and historical evolution.\n"
+    "2. Discuss how these theories have been utilized or juxtaposed in explaining and predicting "
+    "the dynamics of celestial bodies, including planets, asteroids, comets, and other astronomical phenomena.\n"
+    "3. Explore the challenges and limitations faced by physicists and astronomers in employing "
+    "these theories for celestial predictions. How has the advent of quantum computing and advancements "
+    "in numerical simulations aided in overcoming these challenges?\n"
+    "4. Delve into speculative or emerging theories that attempt to bridge the gaps between Chaos Theory "
+    "and Quantum Mechanics, and discuss their potential implications for future astronomical predictions "
+    "and explorations.\n"
+    "5. Reflect on the philosophical and practical implications of the interplay between determinism and "
+    "uncertainty in our understanding of the universe. How does this interplay influence the scientific "
+    "quest for a unified theory of physics?\n"
+    "6. Finally, propose a hypothetical or real-world scenario where a melding of Chaos Theory and Quantum "
+    "Mechanics could significantly advance our understanding or prediction of celestial mechanics. Discuss "
+    "the potential impact on space exploration, astrophysical research, or technological advancements.\n\n"
+    "Ensure your response is well-researched, thoroughly referenced, and delves deeply into the mathematical "
+    "and physical intricacies involved, making connections to real-world applications and speculative future scenarios."
+)
+
+        role = "You will be my physics teacher"
         
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-16k",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": role},
                 {"role": "user", "content": prompt_text},
