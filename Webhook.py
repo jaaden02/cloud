@@ -6,7 +6,7 @@ import sys
 # Initialize Flask app
 app = Flask(__name__)
 
-# Function to handle streaming from OpenAI API
+'''# Function to handle streaming from OpenAI API
 def handle_stream(response):
     collected_message = ""
     for chunk in response:
@@ -17,7 +17,7 @@ def handle_stream(response):
             print(content, end="")
             sys.stdout.flush()
             collected_message += content
-    return collected_message
+    return collected_message'''
 
 # Function to call OpenAI API and process text
 def call_openai_api():
@@ -94,9 +94,27 @@ def call_openai_api():
             top_p=0.9,
             frequency_penalty=0.5,
             presence_penalty=0.6,
-            stream = True
+            #stream = True
             
         )
+        
+        assistant_message = response['choices'][0]['message']['content']
+        return assistant_message
+    
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {e}"}), 500
+
+@app.route('/Webhook', methods=['POST'])
+def webhook():
+    processed_text = call_openai_api()
+    return jsonify({'processed_text': processed_text})
+
+if __name__ == '__main__':
+    app.run(debug=False)
+
+
+
+'''        
         assistant_message = handle_stream(response)
         
         print("\nComplete Message:")
@@ -114,3 +132,4 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(debug=False)
+'''
