@@ -1,18 +1,26 @@
-from flask import Flask, request, jsonify
-import threading
 import openai
-import time
+import os
+from flask import Flask, request, jsonify
+import sys
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# Event object to signal when API call is done
-api_done_event = threading.Event()
+# Function to handle streaming from OpenAI API
+def handle_stream(response):
+    collected_message = ""
+    for chunk in response:
+        delta = chunk.get('choices', [{}])[0].get('delta', {})
+        content = delta.get('content', None)
 
-# GPT-3.5 Turbo API call
+        if content is not None:
+            print(content, end="")
+            sys.stdout.flush()
+            collected_message += content
+    return collected_message
+
+# Function to call OpenAI API and process text
 def call_openai_api():
-
-
     try:
         openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
 
@@ -85,38 +93,24 @@ def call_openai_api():
             max_tokens=token,
             top_p=0.9,
             frequency_penalty=0.5,
-            presence_penalty=0.6
+            presence_penalty=0.6,
+            stream = True
+            
         )
-        print("Finished API call.")
-        api_done_event.set()
-        assistant_message = response['choices'][0]['message']['content']
-        print("API Response:", assistant_message)  # Print the API response
+        assistant_message = handle_stream(response)
+        
+        print("\nComplete Message:")
+        print(assistant_message)
+        
         return assistant_message
-
+    
     except Exception as e:
         return jsonify({"error": f"An error occurred: {e}"}), 500
 
-def occupy_system():
-    print("System is being occupied.")
-    while not api_done_event.is_set():
-        print("Occupying...")
-        time.sleep(1)
-    print("System is free now.")
-
 @app.route('/Webhook', methods=['POST'])
 def webhook():
-    api_thread = threading.Thread(target=call_openai_api)
-    occupy_thread = threading.Thread(target=occupy_system)
-
-    api_thread.start()
-    occupy_thread.start()
-
-    api_thread.join()
-    occupy_thread.join()
-
-    api_done_event.clear()
-
-    return jsonify({'status': 'accepted'}), 202
+    processed_text = call_openai_api()
+    return jsonify({'processed_text': processed_text})
 
 if __name__ == '__main__':
     app.run(debug=False)
