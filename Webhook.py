@@ -8,7 +8,7 @@ import sys as os
 app = Flask(__name__)
 
 #VARIABLES
-openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
+openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-api-key')
 model= "gpt-3.5-turbo-16k"
 token= 15000
 
