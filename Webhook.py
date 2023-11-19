@@ -1,16 +1,12 @@
 from flask import Flask, request, jsonify
 import openai
-from datetime import datetime
-import requests
 import time
 import sys as os
+from datetime import datetime
+import requests
 
+# Initialize Flask app
 app = Flask(__name__)
-
-#VARIABLES
-openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-api-key')
-model= "gpt-3.5-turbo-16k"
-token= 15000
 
 def calculate_age(birthdate_str):
     try:
@@ -31,31 +27,16 @@ def reverse_geocode(lat, lon):
     except Exception as e:
         return f"Error in reverse geocoding: {str(e)}"
 
-#WEATHER DATA MAYBE
+# GPT-3.5 Turbo API call
+def call_openai_api():
+    try:
+        openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
 
-'''
-PAYLOAD:
-"profile": [
-    "interests": profileViewModel.selectedInterests,
-    "adjectives": profileViewModel.selectedAdjectives,
-    "places": profileViewModel.selectedPlaces,
-    "activities": profileViewModel.selectedActivities,
-    "gender": profileViewModel.gender,
-    "birthDate": birthDateString,
-    "home": profileViewModel.home
-],
-"trip": [
-    "preferences": newTripViewModel.selectedPreferences,
-    "start": startDate,
-    "end": endDate,
-    "description": newTripViewModel.description,
-    "budgetRange": sliderRangeString,
-    "location": locationString
-]
-'''
-
-@app.route('/LocalFlask', methods=['POST'])
-def webhook():
+        if not openai.api_key:
+            return jsonify({"error": "API key not found"}), 500
+        
+        model= "gpt-3.5-turbo-16k"
+        token= 16000
     try:
         print("Request Headers:", request.headers)
         data = request.json
@@ -166,38 +147,17 @@ def webhook():
         top_p=0.9,
         frequency_penalty=0.5,
         presence_penalty=0.6
-    )
-
-        return jsonify({"processed_parameters": test_response,"processed_text": response['choices'][0]['message']['content']})
+        )
+        assistant_message = response['choices'][0]['message']['content']
+        return assistant_message
     
     except Exception as e:
         return jsonify({"error": f"An error occurred: {e}"}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
-'''
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app)
-
-@app.route('/LocalFlask', methods=['POST'])
+@app.route('/Webhook', methods=['POST'])
 def webhook():
-    try:
-        print("Request Headers:", request.headers)
-        data = request.json
-        print("Received Payload:", data)
-        # Your existing response code...
-        response = {
-             "processed_text": "**Day 3: Saturday**\n\n- **10:00 AM - Breakfast at Commonground**\n    - *Cost*: €10-15\n    - *Time Needed*: 1 hour\n    - *Navigation*: Rosenthaler Str. 1, 10119 Berlin\n    - *Insider Tip*: Commonground is a trendy café known for its delicious breakfast options and stylish interior. Start your day with a satisfying meal before embarking on your vintage shopping adventure.\n\n- **11:30 AM - Vintage Shopping in Prenzlauer Berg**\n    - *Cost*: Free (unless you decide to purchase something)\n    - *Time Needed*: 3 hours\n    - *Navigation*: Kastanienallee, Oderberger Str., and surrounding streets in Prenzlauer Berg\n    - *Insider Tip*: Prenzlauer Berg is a neighborhood known for its vintage shops and boutiques. Explore the charming streets and discover unique clothing, accessories, and retro treasures.\n\n- **2:30 PM - Lunch at Prater Biergarten**\n    - *Cost*: €10-15\n    - *Time Needed*: 1 hour\n    - *Navigation*: Kastanienallee 7-9, 10435 Berlin\n    - *Insider Tip*: Prater Biergarten is a historic beer garden offering traditional German cuisine. Enjoy a hearty meal and soak up the relaxed atmosphere before continuing your exploration.\n\n- **4:00 PM - Visit Boxhagener Platz Flohmarkt**\n    - *Cost*: Free (unless you decide to purchase something)\n    - *Time Needed*: 2 hours\n    - *Navigation*: Boxhagener Platz, 10245 Berlin\n    - *Insider Tip*: The Boxhagener Platz Flohmarkt is a popular flea market where you can find a wide range of vintage items, antiques, and second-hand goods. Spend some time browsing through the stalls and bargaining for unique finds.\n\n- **6:30 PM - Dinner at Schwarzwaldstuben**\n    - *Cost*: €15-20\n    - *Time Needed*: 1 hour\n    - *Navigation*: Tucholskystraße 48, 10117 Berlin\n    - *Insider Tip*: Schwarzwaldstuben is a cozy restaurant serving traditional German dishes with a modern twist. Indulge in their delicious food while enjoying the rustic ambiance of this hidden gem.\n"
-    }
-        return jsonify(response)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    processed_text = call_openai_api()
+    return jsonify({'processed_text': processed_text})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-'''
+    app.run(debug=False)
