@@ -30,14 +30,13 @@ def reverse_geocode(lat, lon):
 # GPT-3.5 Turbo API call
 def call_openai_api():
     try:
-        openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
+        openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-api-key')
 
         if not openai.api_key:
             return jsonify({"error": "API key not found"}), 500
         
         model= "gpt-3.5-turbo-16k"
-        token= 16000
-    try:
+        token= 14000
         print("Request Headers:", request.headers)
         data = request.json
         print("Received Payload:", data)
