@@ -2,11 +2,13 @@ from flask import Flask, request, jsonify
 import openai
 from datetime import datetime
 import requests
+import time
+import sys as os
 
 app = Flask(__name__)
 
 #VARIABLES
-openai.api_key = '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'
+openai.api_key = os.environ.get('OPENAI_API_KEY', 'your-fallback-api-key')
 model= "gpt-3.5-turbo-16k"
 token= 15000
 
