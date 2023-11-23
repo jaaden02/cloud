@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import openai
 import time
-import sys as os
+import os
 from datetime import datetime
 import requests
 
