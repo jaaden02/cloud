@@ -141,18 +141,20 @@ def call_openai_api():
             {"role": "user", "content": trip_info},
             {"role": "user", "content": "Can you create a detailed itinerary for my trip based on this information? Include a cost summary and a summarization at the end of the itinerary."}
         ],
-        temperature=0,
-        max_tokens=token,
-        top_p=0.9,
-        frequency_penalty=0.5,
-        presence_penalty=0.6
+            temperature=0,
+            max_tokens=token,
+            top_p=0.9,
+            frequency_penalty=0.5,
+            presence_penalty=0.6
         )
         assistant_message = response['choices'][0]['message']['content']
         return assistant_message
-    
     except Exception as e:
-        return jsonify({"error": f"An error occurred: {e}"}), 500
+        return {"error": f"An error occurred: {e}"}
 
+    '''except Exception as e:
+        return jsonify({"error": f"An error occurred: {e}"}), 500
+'''
 @app.route('/Webhook', methods=['POST'])
 def webhook():
     processed_text = call_openai_api()
